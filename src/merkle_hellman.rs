@@ -32,16 +32,28 @@ impl PrivateKey {
         }
     }
 
-    pub fn decrypt(&self, payload: i32) -> i32 {
+    pub fn decrypt(&self, payload: Vec<i32>) -> String {
+        let mut decrypted_chars = Vec::new();
+
+        for i in payload {
+            decrypted_chars.push(self.decrypt_i32(i));
+        }
+
+        decrypted_chars.iter().collect::<String>()
+    }
+
+    fn decrypt_i32(&self, payload: i32) -> char {
         let mut val = payload * self.multiplier_inverse % self.modulo;
         let mut decrypted = 0;
+
         for i in (0..self.knapsack.values.len()).rev() {
             if self.knapsack.values[i] <= val {
                 decrypted += i32::pow(2, i as u32);
                 val -= self.knapsack.values[i];
             }
         }
-        decrypted
+
+        decrypted as u8 as char
     }
 }
 
@@ -58,9 +70,20 @@ impl PublicKey {
         }
     }
 
-    pub fn encrypt(&self, mut message: u8) -> i32 {
+    pub fn encrypt(&self, message: &str) -> Vec<i32> {
+        let mut encrypted = Vec::new();
+
+        for c in message.chars() {
+            encrypted.push(self.encrypt_u8(c as u8));
+        }
+
+        encrypted
+    }
+
+    fn encrypt_u8(&self, mut message: u8) -> i32 {
         let mut index = 0;
         let mut payload = 0;
+
         while message != 0 {
             if message & 1 == 1 {
                 payload += self.knapsack.values[index];
@@ -73,8 +96,8 @@ impl PublicKey {
     }
 }
 
-pub fn generate_keypair(length: i32) -> (PublicKey, PrivateKey) {
-    let private = PrivateKey::generate(length);
+pub fn generate_keypair() -> (PublicKey, PrivateKey) {
+    let private = PrivateKey::generate(8);
     let public = PublicKey::derive_from_private(&private);
     (public, private)
 }
