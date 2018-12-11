@@ -1,3 +1,5 @@
+extern crate rand;
+
 mod knapsack;
 mod math;
 mod merkle_hellman;
