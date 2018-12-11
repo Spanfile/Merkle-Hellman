@@ -33,13 +33,7 @@ impl PrivateKey {
     }
 
     pub fn decrypt(&self, payload: Vec<i32>) -> String {
-        let mut decrypted_chars = Vec::new();
-
-        for i in payload {
-            decrypted_chars.push(self.decrypt_i32(i));
-        }
-
-        decrypted_chars.iter().collect::<String>()
+        payload.iter().map(|i| self.decrypt_i32(*i)).collect()
     }
 
     fn decrypt_i32(&self, payload: i32) -> char {
@@ -59,25 +53,20 @@ impl PrivateKey {
 
 impl PublicKey {
     fn derive_from_private(private: &PrivateKey) -> PublicKey {
-        let mut values = Vec::new();
-
-        for val in &private.knapsack.values {
-            values.push(val * private.multiplier % private.modulo);
-        }
-
         PublicKey {
-            knapsack: Knapsack { values },
+            knapsack: Knapsack {
+                values: private
+                    .knapsack
+                    .values
+                    .iter()
+                    .map(|v| v * private.multiplier % private.modulo)
+                    .collect(),
+            },
         }
     }
 
     pub fn encrypt(&self, message: &str) -> Vec<i32> {
-        let mut encrypted = Vec::new();
-
-        for c in message.chars() {
-            encrypted.push(self.encrypt_u8(c as u8));
-        }
-
-        encrypted
+        message.chars().map(|c| self.encrypt_u8(c as u8)).collect()
     }
 
     fn encrypt_u8(&self, mut message: u8) -> i32 {
