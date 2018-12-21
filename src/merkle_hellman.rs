@@ -69,15 +69,15 @@ impl PublicKey {
         message.chars().map(|c| self.encrypt_u8(c as u8)).collect()
     }
 
-    fn encrypt_u8(&self, mut message: u8) -> i32 {
+    fn encrypt_u8(&self, mut block: u8) -> i32 {
         let mut index = 0;
         let mut payload = 0;
 
-        while message != 0 {
-            if message & 1 == 1 {
+        while block != 0 {
+            if block & 1 == 1 {
                 payload += self.knapsack.values[index];
             }
-            message >>= 1;
+            block >>= 1;
             index += 1;
         }
 
